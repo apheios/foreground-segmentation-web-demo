@@ -1,0 +1,31 @@
+<svg width="640" height="640" viewBox="0 0 640 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="640" rx="36" fill="#E7DAD5"/>
+  <rect width="640" height="640" rx="36" fill="url(#paint0_linear)"/>
+  <g filter="url(#filter0_f)">
+    <circle cx="180" cy="198" r="86" fill="#C7B3AB"/>
+    <circle cx="468" cy="190" r="102" fill="#D8CCC4"/>
+    <circle cx="480" cy="454" r="118" fill="#BFABA5"/>
+  </g>
+  <ellipse cx="316" cy="352" rx="124" ry="162" fill="#D88C4A"/>
+  <ellipse cx="316" cy="352" rx="98" ry="138" fill="#C75F24"/>
+  <ellipse cx="316" cy="354" rx="70" ry="102" fill="#B4481B"/>
+  <g filter="url(#filter1_f)">
+    <ellipse cx="318" cy="358" rx="128" ry="164" stroke="#FFF7EF" stroke-width="18"/>
+  </g>
+  <defs>
+    <filter id="filter0_f" x="44" y="52" width="672" height="548" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feGaussianBlur stdDeviation="25" result="effect1_foregroundBlur_1_2"/>
+    </filter>
+    <filter id="filter1_f" x="154" y="158" width="328" height="400" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feGaussianBlur stdDeviation="13" result="effect1_foregroundBlur_1_2"/>
+    </filter>
+    <linearGradient id="paint0_linear" x1="320" y1="0" x2="320" y2="640" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EFE6E2"/>
+      <stop offset="1" stop-color="#D9CCC7"/>
+    </linearGradient>
+  </defs>
+</svg>

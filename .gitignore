@@ -1,0 +1,56 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+build
+
+# Python / FastAPI (future)
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.venv
+venv
+env
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Vite generated
+vite.config.d.ts
+vite.config.js
+
+# Backend runtime artifacts (model outputs, temp files)
+backend/app/static/outputs
+
+# Large model checkpoints
+*.pth
+*.pt
+*.ckpt
+*.bin
+*.onnx
+
+# Logs
+*.log
+
+# Misc cache
+.cache/
+tmp/
+temp/
