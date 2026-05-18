@@ -214,3 +214,15 @@
   line-height: 1.48;
   font-size: 12px;
 }
+
+.answer-json {
+  margin: 12px 0 0;
+  padding: 12px;
+  overflow: auto;
+  border: 1px solid rgba(121, 144, 167, 0.24);
+  border-radius: 8px;
+  background: rgba(245, 248, 252, 0.78);
+  color: #213347;
+  font-size: 12px;
+  line-height: 1.45;
+}

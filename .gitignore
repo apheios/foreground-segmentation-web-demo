@@ -37,8 +37,9 @@ Thumbs.db
 vite.config.d.ts
 vite.config.js
 
-# Backend runtime artifacts (model outputs, temp files)
-backend/app/static/outputs
+# Backend runtime artifacts (uploaded temp files)
+backend/app/static/outputs/uploads/*
+!backend/app/static/outputs/uploads/.gitkeep
 
 # Large model checkpoints
 *.pth

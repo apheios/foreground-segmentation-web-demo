@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { page2DemoData } from "../../data/page2DemoData";
 import { taskOptions } from "../../data/page1DemoData";
 import { useObjectUrl } from "../../hooks/useObjectUrl";
+import { evaluateSample, type EvaluationResponse } from "../../services/api";
 import type { PreviewContent, TaskType } from "../../types";
 import { ScoreCard } from "./ScoreCard";
 import { ThinkPanels } from "./ThinkPanels";
@@ -41,7 +42,6 @@ export function Page2Demo({ onOpenPreview }: Props) {
     () => page2DemoData.filter((item) => item.id !== "weak-supervision"),
     []
   );
-  const timerRef = useRef<number | null>(null);
   const [selectedSampleId, setSelectedSampleId] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<TaskType>(defaultSample.taskType);
   const [inputMode, setInputMode] = useState<"sample" | "upload">("sample");
@@ -49,6 +49,7 @@ export function Page2Demo({ onOpenPreview }: Props) {
   const [uploadedMaskFile, setUploadedMaskFile] = useState<File | null>(null);
   const [statusText, setStatusText] = useState("等待输入");
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [evaluationResult, setEvaluationResult] = useState<EvaluationResponse | null>(null);
 
   const uploadedImageUrl = useObjectUrl(uploadedImageFile);
   const uploadedMaskUrl = useObjectUrl(uploadedMaskFile);
@@ -97,33 +98,32 @@ export function Page2Demo({ onOpenPreview }: Props) {
     };
   }, [inputMode, selectedSample, uploadedImageUrl, uploadedMaskUrl]);
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        window.clearTimeout(timerRef.current);
-      }
-    };
-  }, []);
-
-  const handleEvaluate = () => {
+  const handleEvaluate = async () => {
     if (isEvaluating || (!selectedSample && !uploadedImageUrl)) {
       return;
     }
 
     setIsEvaluating(true);
-    setStatusText("评估完成");
+    setStatusText("请求后端中");
 
-    timerRef.current = window.setTimeout(() => {
+    try {
+      const result = await evaluateSample({
+        taskType: selectedTask,
+        sampleId: inputMode === "sample" ? selectedSample?.id : null,
+        image: inputMode === "upload" ? uploadedImageFile : null,
+        mask: inputMode === "upload" ? uploadedMaskFile : null
+      });
+      setEvaluationResult(result);
       setIsEvaluating(false);
       setStatusText("评估成功");
-    }, 650);
+    } catch (error) {
+      setIsEvaluating(false);
+      setStatusText("评估失败");
+      console.error(error);
+    }
   };
 
   const handleReset = () => {
-    if (timerRef.current) {
-      window.clearTimeout(timerRef.current);
-    }
-
     setSelectedSampleId(null);
     setSelectedTask(defaultSample.taskType);
     setInputMode("sample");
@@ -131,12 +131,14 @@ export function Page2Demo({ onOpenPreview }: Props) {
     setUploadedMaskFile(null);
     setIsEvaluating(false);
     setStatusText("等待输入");
+    setEvaluationResult(null);
   };
 
   const handleSampleChange = (sampleId: string | null) => {
     if (!sampleId) {
       setSelectedSampleId(null);
       setStatusText(uploadedImageUrl ? "本地样本模式" : "等待输入");
+      setEvaluationResult(null);
       return;
     }
 
@@ -147,7 +149,14 @@ export function Page2Demo({ onOpenPreview }: Props) {
 
     setSelectedSampleId(nextSample.id);
     setSelectedTask(nextSample.taskType);
-    setStatusText("评估完成");
+    setStatusText("样例已选择");
+    setEvaluationResult(null);
+  };
+
+  const handleTaskChange = (taskType: TaskType) => {
+    setSelectedTask(taskType);
+    setEvaluationResult(null);
+    setStatusText(selectedSample || uploadedImageUrl ? "任务已更新" : "等待输入");
   };
 
   const hasUploadedImage = Boolean(uploadedImageUrl);
@@ -161,6 +170,28 @@ export function Page2Demo({ onOpenPreview }: Props) {
   const inputPreview = previewMap.input;
   const maskPreview = previewMap.mask;
   const overlayPreview = previewMap.overlay;
+  const displayScores = evaluationResult
+    ? {
+        iqaScore: evaluationResult.iqa_score,
+        taskRepresentativeness: evaluationResult.task_representativeness,
+        trainSuitability: evaluationResult.train_suitability
+      }
+    : selectedSample
+      ? {
+          iqaScore: selectedSample.iqaScore,
+          taskRepresentativeness: selectedSample.taskRepresentativeness,
+          trainSuitability: selectedSample.trainSuitability
+        }
+      : null;
+  const displayThink = evaluationResult
+    ? {
+        overview: evaluationResult.explanation.overview,
+        imageQualityObservation: evaluationResult.explanation.image_quality_observation,
+        taskObservation: evaluationResult.explanation.task_observation,
+        supervisionObservation: evaluationResult.explanation.supervision_observation
+      }
+    : selectedSample?.think ?? null;
+  const displayAnswer = evaluationResult?.answer ?? selectedSample?.answer;
 
   return (
     <section className="evaluation-layout">
@@ -188,7 +219,8 @@ export function Page2Demo({ onOpenPreview }: Props) {
               type="button"
               onClick={() => {
                 setInputMode("sample");
-                setStatusText(selectedSample ? "评估完成" : "等待输入");
+                setStatusText(selectedSample ? "样例已选择" : "等待输入");
+                setEvaluationResult(null);
               }}
             >
               系统样例
@@ -199,6 +231,7 @@ export function Page2Demo({ onOpenPreview }: Props) {
               onClick={() => {
                 setInputMode("upload");
                 setStatusText("等待输入");
+                setEvaluationResult(null);
               }}
             >
               上传原图 + 掩码
@@ -221,6 +254,7 @@ export function Page2Demo({ onOpenPreview }: Props) {
                   onChange={(event) => {
                     const file = event.target.files?.[0] ?? null;
                     setUploadedImageFile(file);
+                    setEvaluationResult(null);
                     setStatusText(file ? "本地样本已更新" : "本地样本模式");
                   }}
                 />
@@ -236,6 +270,7 @@ export function Page2Demo({ onOpenPreview }: Props) {
                   onChange={(event) => {
                     const file = event.target.files?.[0] ?? null;
                     setUploadedMaskFile(file);
+                    setEvaluationResult(null);
                     setStatusText(file || uploadedImageUrl ? "本地样本已更新" : "等待输入");
                   }}
                 />
@@ -253,7 +288,7 @@ export function Page2Demo({ onOpenPreview }: Props) {
             <h2>任务类型</h2>
             <span>任务属性</span>
           </div>
-          <TaskPills options={taskOptions} selectedTask={selectedTask} onChange={setSelectedTask} />
+          <TaskPills options={taskOptions} selectedTask={selectedTask} onChange={handleTaskChange} />
         </div>
 
         <div className="panel-section action-section">
@@ -326,7 +361,7 @@ export function Page2Demo({ onOpenPreview }: Props) {
             </section>
 
             <section className="evaluation-detail-grid">
-              {selectedSample ? (
+              {displayScores && displayThink ? (
                 <>
                   <section className={`score-panel ${isEvaluating ? "is-loading" : ""}`}>
                     <div className="section-heading score-heading">
@@ -339,11 +374,11 @@ export function Page2Demo({ onOpenPreview }: Props) {
                         description="图像质量"
                         valueNode={
                           <>
-                            <div className="score-number">{selectedSample.iqaScore.toFixed(2)}</div>
+                            <div className="score-number">{displayScores.iqaScore.toFixed(2)}</div>
                             <div className="score-progress">
                               <span
                                 className="score-progress-bar"
-                                style={{ width: `${Math.round(selectedSample.iqaScore * 100)}%` }}
+                                style={{ width: `${Math.round(displayScores.iqaScore * 100)}%` }}
                               />
                             </div>
                           </>
@@ -353,8 +388,8 @@ export function Page2Demo({ onOpenPreview }: Props) {
                         description="任务代表性"
                         valueNode={
                           <>
-                            <div className="score-level">{selectedSample.taskRepresentativeness} / 5</div>
-                            {renderLevelDots(selectedSample.taskRepresentativeness)}
+                            <div className="score-level">{displayScores.taskRepresentativeness} / 5</div>
+                            {renderLevelDots(displayScores.taskRepresentativeness)}
                           </>
                         }
                       />
@@ -363,15 +398,15 @@ export function Page2Demo({ onOpenPreview }: Props) {
                         emphasis
                         valueNode={
                           <>
-                            <div className="score-level">{selectedSample.trainSuitability} / 5</div>
-                            {renderLevelDots(selectedSample.trainSuitability)}
+                            <div className="score-level">{displayScores.trainSuitability} / 5</div>
+                            {renderLevelDots(displayScores.trainSuitability)}
                           </>
                         }
                       />
                     </div>
                   </section>
 
-                  <ThinkPanels sample={selectedSample} isEvaluating={isEvaluating} />
+                  <ThinkPanels think={displayThink} answer={displayAnswer} isEvaluating={isEvaluating} />
                 </>
               ) : (
                 <>
