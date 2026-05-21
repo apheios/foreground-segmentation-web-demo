@@ -1,5 +1,0 @@
-{
-  "openai_api_key": "",
-  "openai_evaluation_model": "gpt-4.1-mini",
-  "openai_request_timeout_seconds": 60
-}

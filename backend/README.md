@@ -11,27 +11,28 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## OpenAI Evaluation
+## Qwen Evaluation
 
-The second demo page can call OpenAI Vision through the evaluation API.
+The second demo page can call Qwen Vision through the evaluation API.
 
 Create or edit the local config file:
 
 ```bash
-cp config/openai.example.json config/openai.local.json
+cp config/qwen.example.json config/qwen.local.json
 ```
 
-Then set the API key and model in `config/openai.local.json`:
+Then set the DashScope API key and model in `config/qwen.local.json`:
 
 ```json
 {
-  "openai_api_key": "your_api_key",
-  "openai_evaluation_model": "gpt-4.1-mini",
-  "openai_request_timeout_seconds": 60
+  "qwen_api_key": "your_api_key",
+  "qwen_base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  "qwen_evaluation_model": "qwen3-vl-plus",
+  "qwen_request_timeout_seconds": 60
 }
 ```
 
-`config/openai.local.json` is ignored by Git. If `openai_api_key` is empty, `/api/evaluation/evaluate` falls back to the local mock evaluator so the demo can still run offline.
+`config/qwen.local.json` is ignored by Git. If `qwen_api_key` is empty, `/api/evaluation/evaluate` falls back to the local mock evaluator so the demo can still run offline.
 
 ## CamoDiffusion Segmentation
 
@@ -105,4 +106,4 @@ http://localhost:8000/static
 - Basic config, paths, and Pydantic schemas
 - Mock foreground segmentation
 - Optional CamoDiffusion-backed foreground segmentation with mock fallback
-- OpenAI-backed training data evaluation with mock fallback
+- Qwen-backed training data evaluation with mock fallback

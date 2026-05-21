@@ -83,9 +83,9 @@ POST /api/evaluation/evaluate
 GET  /static/...
 ```
 
-## OpenAI Evaluation
+## Qwen Evaluation
 
-The second page uses `POST /api/evaluation/evaluate`. When `OPENAI_API_KEY` is configured, the backend sends the uploaded image-mask pair to an OpenAI vision model and returns:
+The second page uses `POST /api/evaluation/evaluate`. When the DashScope key is configured, the backend sends the uploaded image-mask pair to a Qwen vision model and returns:
 
 - `iqa_score`
 - `task_representativeness`
@@ -93,18 +93,19 @@ The second page uses `POST /api/evaluation/evaluate`. When `OPENAI_API_KEY` is c
 - structured `explanation`
 - `answer` JSON
 
-Configure OpenAI in `backend/config/openai.local.json`:
+Configure Qwen in `backend/config/qwen.local.json`:
 
 ```bash
 cd backend
-cp config/openai.example.json config/openai.local.json
+cp config/qwen.example.json config/qwen.local.json
 ```
 
 ```json
 {
-  "openai_api_key": "your_api_key",
-  "openai_evaluation_model": "gpt-4.1-mini",
-  "openai_request_timeout_seconds": 60
+  "qwen_api_key": "your_api_key",
+  "qwen_base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  "qwen_evaluation_model": "qwen3-vl-plus",
+  "qwen_request_timeout_seconds": 60
 }
 ```
 
@@ -114,7 +115,7 @@ source .venv/bin/activate
 python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-`backend/config/openai.local.json` is ignored by Git. Without a configured API key, the evaluation endpoint keeps using a local mock fallback.
+`backend/config/qwen.local.json` is ignored by Git. Without a configured API key, the evaluation endpoint keeps using a local mock fallback.
 
 ## CamoDiffusion Segmentation
 

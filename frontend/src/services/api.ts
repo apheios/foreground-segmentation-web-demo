@@ -23,7 +23,7 @@ export type EvaluationResponse = {
   task_type: string;
   image_url: string | null;
   mask_url: string | null;
-  provider?: "openai" | "mock";
+  provider?: "qwen" | "mock";
   model?: string | null;
   iqa_score: number;
   task_representativeness: number;

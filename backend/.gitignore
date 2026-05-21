@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 config/openai.local.json
+config/qwen.local.json
 config/camodiffusion.local.json
 app/static/outputs/uploads/*
 !app/static/outputs/uploads/.gitkeep

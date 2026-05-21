@@ -1,0 +1,6 @@
+{
+  "qwen_api_key": "",
+  "qwen_base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  "qwen_evaluation_model": "qwen3-vl-plus",
+  "qwen_request_timeout_seconds": 60
+}

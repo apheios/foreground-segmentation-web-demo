@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 CONFIG_DIR = BACKEND_DIR / "config"
-OPENAI_CONFIG_PATH = CONFIG_DIR / "openai.local.json"
+QWEN_CONFIG_PATH = CONFIG_DIR / "qwen.local.json"
 CAMODIFFUSION_CONFIG_FILE_PATH = CONFIG_DIR / "camodiffusion.local.json"
 
 
@@ -42,9 +42,10 @@ class Settings(BaseModel):
     app_version: str = "0.1.0"
     service_name: str = "foreground-segmentation-demo-backend"
     api_prefix: str = "/api"
-    openai_api_key: str | None = None
-    openai_evaluation_model: str = "gpt-4.1-mini"
-    openai_request_timeout_seconds: float = 60.0
+    qwen_api_key: str | None = None
+    qwen_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    qwen_evaluation_model: str = "qwen3-vl-plus"
+    qwen_request_timeout_seconds: float = 60.0
     camodiffusion_reference_dir: str | None = None
     camodiffusion_config_path: str | None = None
     camodiffusion_checkpoint_path: str | None = None
@@ -62,7 +63,7 @@ class Settings(BaseModel):
 
 @lru_cache
 def get_settings() -> Settings:
-    openai_config = _load_json_config(OPENAI_CONFIG_PATH)
+    qwen_config = _load_json_config(QWEN_CONFIG_PATH)
     camodiffusion_config = _load_json_config(CAMODIFFUSION_CONFIG_FILE_PATH)
 
     return Settings(
@@ -70,18 +71,24 @@ def get_settings() -> Settings:
         app_version=getenv("APP_VERSION", "0.1.0"),
         service_name=getenv("SERVICE_NAME", "foreground-segmentation-demo-backend"),
         api_prefix=getenv("API_PREFIX", "/api"),
-        openai_api_key=_get_config_value(openai_config, "openai_api_key", "OPENAI_API_KEY"),
-        openai_evaluation_model=_get_config_value(
-            openai_config,
-            "openai_evaluation_model",
-            "OPENAI_EVALUATION_MODEL",
-            "gpt-4.1-mini",
+        qwen_api_key=_get_config_value(qwen_config, "qwen_api_key", "DASHSCOPE_API_KEY"),
+        qwen_base_url=_get_config_value(
+            qwen_config,
+            "qwen_base_url",
+            "DASHSCOPE_BASE_URL",
+            "https://dashscope.aliyuncs.com/compatible-mode/v1",
         ),
-        openai_request_timeout_seconds=float(
+        qwen_evaluation_model=_get_config_value(
+            qwen_config,
+            "qwen_evaluation_model",
+            "QWEN_EVALUATION_MODEL",
+            "qwen3-vl-plus",
+        ),
+        qwen_request_timeout_seconds=float(
             _get_config_value(
-                openai_config,
-                "openai_request_timeout_seconds",
-                "OPENAI_REQUEST_TIMEOUT_SECONDS",
+                qwen_config,
+                "qwen_request_timeout_seconds",
+                "QWEN_REQUEST_TIMEOUT_SECONDS",
                 60,
             )
         ),

@@ -9,8 +9,8 @@ class EvaluationAdapterError(RuntimeError):
     pass
 
 
-class OpenAIEvaluationAdapter:
-    """OpenAI Vision adapter for training data evaluation."""
+class QwenEvaluationAdapter:
+    """Qwen Vision adapter for training data evaluation."""
 
     _response_schema: dict[str, Any] = {
         "type": "object",
@@ -70,13 +70,17 @@ class OpenAIEvaluationAdapter:
         ],
     }
 
-    def __init__(self, api_key: str, model: str, timeout_seconds: float) -> None:
+    def __init__(self, api_key: str, base_url: str, model: str, timeout_seconds: float) -> None:
         try:
             from openai import OpenAI
         except ImportError as exc:
             raise EvaluationAdapterError("openai package is not installed") from exc
 
-        self._client = OpenAI(api_key=api_key, timeout=timeout_seconds)
+        self._client = OpenAI(
+            api_key=api_key,
+            base_url=base_url,
+            timeout=timeout_seconds,
+        )
         self._model = model
 
     def evaluate(
@@ -88,50 +92,48 @@ class OpenAIEvaluationAdapter:
     ) -> EvaluationResult:
         content: list[dict[str, Any]] = [
             {
-                "type": "input_text",
+                "type": "text",
                 "text": self._build_prompt(task_type=task_type, has_mask=mask is not None),
             },
             {
-                "type": "input_image",
-                "image_url": self._to_data_url(image),
-                "detail": "low",
+                "type": "image_url",
+                "image_url": {
+                    "url": self._to_data_url(image),
+                },
             },
         ]
 
         if mask:
             content.append(
                 {
-                    "type": "input_image",
-                    "image_url": self._to_data_url(mask),
-                    "detail": "low",
+                    "type": "image_url",
+                    "image_url": {
+                        "url": self._to_data_url(mask),
+                    },
                 }
             )
 
         try:
-            response = self._client.responses.create(
+            completion = self._client.chat.completions.create(
                 model=self._model,
-                input=[
+                messages=[
                     {
                         "role": "user",
                         "content": content,
                     }
                 ],
-                text={
-                    "format": {
-                        "type": "json_schema",
-                        "name": "training_data_evaluation",
-                        "schema": self._response_schema,
-                        "strict": True,
-                    }
-                },
+                response_format={"type": "json_object"},
             )
         except Exception as exc:
-            raise EvaluationAdapterError(f"OpenAI evaluation request failed: {exc}") from exc
+            raise EvaluationAdapterError(f"Qwen evaluation request failed: {exc}") from exc
 
         try:
-            payload = json.loads(response.output_text)
+            content_text = completion.choices[0].message.content
+            if not isinstance(content_text, str):
+                raise TypeError("Qwen completion content is not text")
+            payload = json.loads(content_text)
         except Exception as exc:
-            raise EvaluationAdapterError("OpenAI evaluation response was not valid JSON") from exc
+            raise EvaluationAdapterError("Qwen evaluation response was not valid JSON") from exc
 
         return self._normalize_result(payload)
 
@@ -154,6 +156,8 @@ class OpenAIEvaluationAdapter:
             "- COD: camouflaged object detection, foreground blends with background.\n"
             "- ORSI-SOD: optical remote sensing salient object detection.\n"
             "- DBD: defocus blur detection, foreground/blur relationship matters.\n\n"
+            "Return only one JSON object that follows this schema:\n"
+            f"{json.dumps(self._response_schema, ensure_ascii=True)}\n"
             "Use concise Chinese explanations suitable for a research demo UI."
         )
 

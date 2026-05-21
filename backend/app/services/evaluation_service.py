@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from app.adapters.evaluation_adapter import EvaluationAdapterError, OpenAIEvaluationAdapter
+from app.adapters.evaluation_adapter import EvaluationAdapterError, QwenEvaluationAdapter
 from app.core.config import get_settings
 from app.models.schemas import EvaluationExplanation, EvaluationImageInput, EvaluationResult
 
@@ -23,16 +23,17 @@ class EvaluationService:
         mask: EvaluationImageInput | None = None,
     ) -> EvaluationOutcome:
         settings = get_settings()
-        if settings.openai_api_key and image:
-            adapter = OpenAIEvaluationAdapter(
-                api_key=settings.openai_api_key,
-                model=settings.openai_evaluation_model,
-                timeout_seconds=settings.openai_request_timeout_seconds,
+        if settings.qwen_api_key and image:
+            adapter = QwenEvaluationAdapter(
+                api_key=settings.qwen_api_key,
+                base_url=settings.qwen_base_url,
+                model=settings.qwen_evaluation_model,
+                timeout_seconds=settings.qwen_request_timeout_seconds,
             )
             return EvaluationOutcome(
                 result=adapter.evaluate(task_type=task_type, image=image, mask=mask),
-                provider="openai",
-                model=settings.openai_evaluation_model,
+                provider="qwen",
+                model=settings.qwen_evaluation_model,
             )
 
         return EvaluationOutcome(
