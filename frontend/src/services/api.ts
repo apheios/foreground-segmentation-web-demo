@@ -23,6 +23,8 @@ export type EvaluationResponse = {
   task_type: string;
   image_url: string | null;
   mask_url: string | null;
+  provider?: "openai" | "mock";
+  model?: string | null;
   iqa_score: number;
   task_representativeness: number;
   train_suitability: number;
@@ -45,11 +47,11 @@ async function postForm<T>(url: string, formData: FormData): Promise<T> {
     body: formData
   });
 
+  const payload = (await response.json()) as ApiEnvelope<T>;
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
+    throw new Error(payload.message || `HTTP ${response.status}`);
   }
 
-  const payload = (await response.json()) as ApiEnvelope<T>;
   if (!payload.success) {
     throw new Error(payload.message || "API request failed");
   }
@@ -60,7 +62,7 @@ async function postForm<T>(url: string, formData: FormData): Promise<T> {
 export function inferSegmentation(params: {
   taskType: string;
   sampleId?: string | null;
-  image?: File | null;
+  image?: File | Blob | null;
 }) {
   const formData = new FormData();
   formData.append("task_type", params.taskType);
@@ -77,8 +79,8 @@ export function inferSegmentation(params: {
 export function evaluateSample(params: {
   taskType: string;
   sampleId?: string | null;
-  image?: File | null;
-  mask?: File | null;
+  image?: File | Blob | null;
+  mask?: File | Blob | null;
 }) {
   const formData = new FormData();
   formData.append("task_type", params.taskType);

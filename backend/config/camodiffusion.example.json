@@ -1,0 +1,7 @@
+{
+  "camodiffusion_reference_dir": "../reference/CamoDiffusion",
+  "camodiffusion_config_path": "../reference/CamoDiffusion/config/camoDiffusion_384x384.yaml",
+  "camodiffusion_checkpoint_path": "",
+  "camodiffusion_device": "auto",
+  "camodiffusion_num_sample_steps": 10
+}

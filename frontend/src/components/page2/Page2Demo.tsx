@@ -4,6 +4,7 @@ import { page2DemoData } from "../../data/page2DemoData";
 import { taskOptions } from "../../data/page1DemoData";
 import { useObjectUrl } from "../../hooks/useObjectUrl";
 import { evaluateSample, type EvaluationResponse } from "../../services/api";
+import { assetToFile } from "../../services/assets";
 import type { PreviewContent, TaskType } from "../../types";
 import { ScoreCard } from "./ScoreCard";
 import { ThinkPanels } from "./ThinkPanels";
@@ -104,14 +105,24 @@ export function Page2Demo({ onOpenPreview }: Props) {
     }
 
     setIsEvaluating(true);
-    setStatusText("请求后端中");
+    setStatusText(inputMode === "sample" ? "准备样例图像" : "请求后端中");
 
     try {
+      const sampleImageFile =
+        inputMode === "sample" && selectedSample
+          ? await assetToFile(selectedSample.inputImage, `${selectedSample.id}-image`)
+          : null;
+      const sampleMaskFile =
+        inputMode === "sample" && selectedSample
+          ? await assetToFile(selectedSample.maskImage, `${selectedSample.id}-mask`)
+          : null;
+
+      setStatusText("请求后端中");
       const result = await evaluateSample({
         taskType: selectedTask,
         sampleId: inputMode === "sample" ? selectedSample?.id : null,
-        image: inputMode === "upload" ? uploadedImageFile : null,
-        mask: inputMode === "upload" ? uploadedMaskFile : null
+        image: inputMode === "upload" ? uploadedImageFile : sampleImageFile,
+        mask: inputMode === "upload" ? uploadedMaskFile : sampleMaskFile
       });
       setEvaluationResult(result);
       setIsEvaluating(false);

@@ -41,3 +41,9 @@ class EvaluationResult(BaseModel):
     train_suitability: int
     explanation: EvaluationExplanation
     answer: dict[str, Any]
+
+
+class EvaluationImageInput(BaseModel):
+    data: bytes
+    mime_type: str
+    filename: str | None = None

@@ -1,10 +1,47 @@
-from app.models.schemas import EvaluationExplanation, EvaluationResult
+from dataclasses import dataclass
+
+from app.adapters.evaluation_adapter import EvaluationAdapterError, OpenAIEvaluationAdapter
+from app.core.config import get_settings
+from app.models.schemas import EvaluationExplanation, EvaluationImageInput, EvaluationResult
+
+
+@dataclass(frozen=True)
+class EvaluationOutcome:
+    result: EvaluationResult
+    provider: str
+    model: str | None = None
 
 
 class EvaluationService:
-    """Mock evaluation workflow; replace the adapter call when the real model is ready."""
+    """Training data evaluation workflow."""
 
-    def evaluate(self, task_type: str, has_mask: bool) -> EvaluationResult:
+    def evaluate(
+        self,
+        *,
+        task_type: str,
+        image: EvaluationImageInput | None = None,
+        mask: EvaluationImageInput | None = None,
+    ) -> EvaluationOutcome:
+        settings = get_settings()
+        if settings.openai_api_key and image:
+            adapter = OpenAIEvaluationAdapter(
+                api_key=settings.openai_api_key,
+                model=settings.openai_evaluation_model,
+                timeout_seconds=settings.openai_request_timeout_seconds,
+            )
+            return EvaluationOutcome(
+                result=adapter.evaluate(task_type=task_type, image=image, mask=mask),
+                provider="openai",
+                model=settings.openai_evaluation_model,
+            )
+
+        return EvaluationOutcome(
+            result=self._mock_evaluate(task_type=task_type, has_mask=mask is not None),
+            provider="mock",
+            model=None,
+        )
+
+    def _mock_evaluate(self, task_type: str, has_mask: bool) -> EvaluationResult:
         representativeness = {
             "SOD": 4,
             "COD": 5,
@@ -36,3 +73,6 @@ class EvaluationService:
             ),
             answer=answer,
         )
+
+
+EvaluationServiceError = EvaluationAdapterError

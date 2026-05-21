@@ -2,6 +2,9 @@ from pathlib import Path
 
 APP_DIR = Path(__file__).resolve().parents[1]
 BACKEND_DIR = APP_DIR.parent
+PROJECT_ROOT = BACKEND_DIR.parent
+REFERENCE_DIR = PROJECT_ROOT / "reference"
+CAMODIFFUSION_DIR = REFERENCE_DIR / "CamoDiffusion"
 STATIC_DIR = APP_DIR / "static"
 SAMPLES_DIR = STATIC_DIR / "samples"
 OUTPUTS_DIR = STATIC_DIR / "outputs"

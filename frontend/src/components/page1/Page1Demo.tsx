@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { page1DemoData, taskOptions } from "../../data/page1DemoData";
 import { useObjectUrl } from "../../hooks/useObjectUrl";
 import { inferSegmentation, type SegmentationResponse } from "../../services/api";
+import { assetToFile } from "../../services/assets";
 import type { PreviewContent, TaskType } from "../../types";
 import { GalleryCard } from "../shared/GalleryCard";
 import { SampleSelector } from "../shared/SampleSelector";
@@ -95,13 +96,19 @@ export function Page1Demo({ onOpenPreview }: Props) {
 
     setIsInferring(true);
     setInferenceReady(false);
-    setStatusText("请求后端中");
+    setStatusText(selectedSample && !uploadedFile ? "准备样例图像" : "请求后端中");
 
     try {
+      const sampleImageFile =
+        selectedSample && !uploadedFile
+          ? await assetToFile(selectedSample.inputImage, `${selectedSample.id}-image`)
+          : null;
+
+      setStatusText("请求后端中");
       const result = await inferSegmentation({
         taskType: selectedTask,
         sampleId: selectedSample?.id,
-        image: uploadedFile
+        image: uploadedFile ?? sampleImageFile
       });
       setSegmentationResult(result);
       setIsInferring(false);
@@ -278,7 +285,7 @@ export function Page1Demo({ onOpenPreview }: Props) {
                 ? "当前已上传图像，但未选择系统样例。点击开始推理后可在此处展示结果。"
                 : resultVisible
                   ? `当前展示样例：${selectedSample?.name}。点击图像可查看放大预览。`
-                  : "点击开始推理后，将调用后端 mock 接口生成结果。"}
+                  : "点击开始推理后，将调用后端分割接口生成结果。"}
             </div>
           </>
         )}
