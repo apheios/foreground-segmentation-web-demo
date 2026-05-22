@@ -19,7 +19,14 @@ class SegmentationService:
         image_path: Path | None = None,
     ) -> SegmentationResult:
         settings = get_settings()
-        checkpoint_path = self._checkpoint_path(settings.camodiffusion_checkpoint_path)
+        task_config = settings.camodiffusion_tasks.get(task_type.upper(), {})
+        checkpoint_path = self._checkpoint_path(
+            self._task_config_value(
+                task_config,
+                "checkpoint_path",
+                settings.camodiffusion_checkpoint_path,
+            )
+        )
 
         if image_path and checkpoint_path:
             try:
@@ -27,7 +34,13 @@ class SegmentationService:
                     image_path=image_path,
                     original_url=original_url,
                     checkpoint_path=checkpoint_path,
-                    config_path=self._config_path(settings.camodiffusion_config_path),
+                    config_path=self._config_path(
+                        self._task_config_value(
+                            task_config,
+                            "config_path",
+                            settings.camodiffusion_config_path,
+                        )
+                    ),
                     reference_dir=self._reference_dir(settings.camodiffusion_reference_dir),
                     device=settings.camodiffusion_device,
                     num_sample_steps=settings.camodiffusion_num_sample_steps,
@@ -130,6 +143,15 @@ class SegmentationService:
         if not path.is_absolute():
             path = BACKEND_DIR / path
         return path.resolve()
+
+    def _task_config_value(
+        self,
+        task_config: dict[str, object],
+        key: str,
+        default: str | None,
+    ) -> str | None:
+        value = task_config.get(key)
+        return str(value) if value not in (None, "") else default
 
     def _task_bias(self, task_type: str) -> int:
         return {

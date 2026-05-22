@@ -137,12 +137,22 @@ cp config/camodiffusion.example.json config/camodiffusion.local.json
   "camodiffusion_reference_dir": "../reference/CamoDiffusion",
   "camodiffusion_config_path": "../reference/CamoDiffusion/config/camoDiffusion_384x384.yaml",
   "camodiffusion_checkpoint_path": "/absolute/path/to/model-best.pt",
+  "camodiffusion_tasks": {
+    "COD": {
+      "config_path": "../reference/CamoDiffusion/config/camoDiffusion_384x384.yaml",
+      "checkpoint_path": "/absolute/path/to/cod-model-best.pt"
+    },
+    "SOD": {
+      "config_path": "../reference/CamoDiffusion/config/camoDiffusion-E_384x384.yaml",
+      "checkpoint_path": "/absolute/path/to/sod-model-best.pt"
+    }
+  },
   "camodiffusion_device": "auto",
   "camodiffusion_num_sample_steps": 10
 }
 ```
 
-Current repository state intentionally leaves `camodiffusion_checkpoint_path` empty. Without a checkpoint, the segmentation endpoint keeps returning the mock result.
+`camodiffusion_config_path` and `camodiffusion_checkpoint_path` are defaults. A `camodiffusion_tasks.<task_type>` entry overrides config and checkpoint for the matching request. Current repository state intentionally leaves checkpoint paths empty. Without a selected checkpoint, the segmentation endpoint keeps returning the mock result.
 
 Single-image script:
 

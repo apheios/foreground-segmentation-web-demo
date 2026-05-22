@@ -49,6 +49,7 @@ class Settings(BaseModel):
     camodiffusion_reference_dir: str | None = None
     camodiffusion_config_path: str | None = None
     camodiffusion_checkpoint_path: str | None = None
+    camodiffusion_tasks: dict[str, dict[str, Any]] = Field(default_factory=dict)
     camodiffusion_device: str = "auto"
     camodiffusion_num_sample_steps: int | None = None
     cors_origins: list[str] = Field(
@@ -107,6 +108,7 @@ def get_settings() -> Settings:
             "camodiffusion_checkpoint_path",
             "CAMODIFFUSION_CHECKPOINT_PATH",
         ),
+        camodiffusion_tasks=camodiffusion_config.get("camodiffusion_tasks", {}),
         camodiffusion_device=_get_config_value(
             camodiffusion_config,
             "camodiffusion_device",

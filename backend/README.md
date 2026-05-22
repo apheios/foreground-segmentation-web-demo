@@ -51,12 +51,22 @@ Then set the checkpoint path when a pretrained weight is available:
   "camodiffusion_reference_dir": "../reference/CamoDiffusion",
   "camodiffusion_config_path": "../reference/CamoDiffusion/config/camoDiffusion_384x384.yaml",
   "camodiffusion_checkpoint_path": "/absolute/path/to/model-best.pt",
+  "camodiffusion_tasks": {
+    "COD": {
+      "config_path": "../reference/CamoDiffusion/config/camoDiffusion_384x384.yaml",
+      "checkpoint_path": "/absolute/path/to/cod-model-best.pt"
+    },
+    "SOD": {
+      "config_path": "../reference/CamoDiffusion/config/camoDiffusion-E_384x384.yaml",
+      "checkpoint_path": "/absolute/path/to/sod-model-best.pt"
+    }
+  },
   "camodiffusion_device": "auto",
   "camodiffusion_num_sample_steps": 10
 }
 ```
 
-`config/camodiffusion.local.json` is ignored by Git. If `camodiffusion_checkpoint_path` is empty or the file is missing, `/api/segmentation/infer` falls back to the local mock result.
+`config/camodiffusion.local.json` is ignored by Git. The `camodiffusion_config_path` and `camodiffusion_checkpoint_path` fields are defaults. A matching `camodiffusion_tasks.<task_type>` entry overrides config and checkpoint for that request. If the selected task has no checkpoint and the default checkpoint is empty or missing, `/api/segmentation/infer` falls back to the local mock result.
 
 Single-image script:
 
